@@ -62,8 +62,6 @@ export class TimerComponent {
   ) {
     this.timerService.timer$.subscribe({
       next: (res: any) => {
-        console.log(res);
-
         this.timer.minutes = res.min.toString().padStart(2, '0');
         this.timer.seconds = res.sec.toString().padStart(2, '0');
         this.timerColorClass = this.checkTimerColorClass();

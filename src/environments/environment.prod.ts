@@ -1,5 +1,5 @@
 export const environment = {
-    production: false,
+    production: true,
     API_BASE_PATH: 'https://contador-playbacks-api.azurewebsites.net/federaciodefogueres/contador-playbacks-api/1.0.0',
     firebase: {
         apiKey: "AIzaSyCbCGw6pxYLT6L3SEMYxz99tZMAlm6jxao",

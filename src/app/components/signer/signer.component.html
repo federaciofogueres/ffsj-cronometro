@@ -1,0 +1,6 @@
+<canvas #canvas class="canvas" (mousedown)="startDrawing($event)" (mousemove)="draw($event)" (mouseup)="stopDrawing()"
+    (touchstart)="startDrawing($event)" (touchmove)="draw($event)" (touchend)="stopDrawing()">
+    Your browser does not support the canvas element.
+</canvas>
+
+<button (click)="clearSigner()" class="btn btn-danger clean-button">Limpiar firma</button>

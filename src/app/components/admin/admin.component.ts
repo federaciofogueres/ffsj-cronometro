@@ -66,6 +66,7 @@ export class AdminComponent {
 
   goToConfirmation() {
     this.saveTimer();
+    this.resetTimer();
     this.route.navigateByUrl('validar')
   }
 

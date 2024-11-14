@@ -1,0 +1,41 @@
+<form class="container" [formGroup]="registryForm">
+
+
+    <div class="row m-3 mail">
+        <p class="p-0">Email de la asociación</p>
+        <input email placeholder="email" formControlName="email">
+    </div>
+
+    <div class="row m-2">
+        <app-signer #signer [width]="calculatedSize.width" [height]="calculatedSize.height" class="signer"></app-signer>
+    </div>
+
+    <div class="container p-3 timers">
+
+        <div class="row text-center titles">
+            <p class="p-0 m-0">
+                Tiempos registrados
+            </p>
+        </div>
+
+        <div class="row text-center mt-3 titles">
+            <div class="col">
+                Entrada
+            </div>
+            <div class="col">
+                Salida
+            </div>
+        </div>
+
+        <div class="row justify-content-around times my-3">
+            <input class="col text-center" [value]="entryTimer.value" formControlName="entryTimer">
+            <input class="col text-center" [value]="exitTimer.value" formControlName="exitTimer">
+        </div>
+
+        <div class="row">
+            <button class="btn btn-primary send-button" (click)="sendEmail()">Enviar</button>
+        </div>
+
+    </div>
+
+</form>

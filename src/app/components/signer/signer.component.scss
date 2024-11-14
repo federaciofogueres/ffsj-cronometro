@@ -1,0 +1,12 @@
+.canvas {
+    background-color: var(--color-blue-pastel);
+    border: 2px solid darken($color: #EEF1FF, $amount: 40);
+    border-radius: 10px;
+}
+
+.clean-button {
+    margin-top: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: var(--color-red-crimson);
+}

@@ -1,0 +1,67 @@
+.container {
+    padding: unset;
+    //margin: unset;
+
+    .mail {
+        input {
+            background-color: var(--color-blue-pastel);
+            border: 2px solid darken($color: #EEF1FF, $amount: 40);
+            border-radius: 10px;
+        }
+    }
+
+    .signer {
+        padding: unset;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .timers {
+        .titles {
+            font-weight: bold;
+        }
+
+        .times {
+            background-color: var(--color-blue-pastel);
+            padding: 1rem;
+
+            input {
+                border: unset;
+                background-color: unset;
+            }
+        }
+
+        .timer-button {
+            button {
+                aspect-ratio: 1 / 1;
+                border-radius: 50%;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+
+            .activate-button {
+                background-color: var(--color-light-green);
+                border-color: var(--color-light-green);
+                color: darken($color: #90EE90, $amount: 40);
+            }
+
+            .stop-button {
+                background-color: var(--color-red-crimson);
+            }
+        }
+
+        .send-button {
+            min-width: 5rem;
+            max-width: 15rem;
+            width: 75%;
+            margin: auto;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: darken($color: #EEF1FF, $amount: 40);
+            background-color: var(--color-blue-pastel);
+        }
+
+    }
+
+}
