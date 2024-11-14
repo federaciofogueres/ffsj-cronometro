@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject } from 'rxjs';
 import { Asociacion, Session } from '../../api';
 
@@ -17,16 +18,18 @@ export class ChoreService {
   private asociacionesSelecteds$ = new BehaviorSubject<Asociacion[]>([]);
   asociacionesSelectedsObservable = this.asociacionesSelecteds$.asObservable();
 
-  constructor() { }
+  constructor(
+    private cookieService: CookieService
+  ) { }
 
   setSessionSelected(session: Session | null) {
     this.sessionSelected$.next(session);
-    localStorage.setItem('session', session?.id!)
+    this.cookieService.set('session', session?.id!)
   }
 
   setAsociacionSelected(asociacion: Asociacion | null) {
     this.asociacionselected$.next(asociacion);
-    localStorage.setItem('asociacion', asociacion?.id!)
+    this.cookieService.set('asociacion', asociacion?.id!)
   }
 
   addAsociacionesSelected(asociacion: Asociacion) {
