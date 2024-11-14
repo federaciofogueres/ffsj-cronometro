@@ -2,3 +2,24 @@
 
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';
+
+:root {
+    --color-primary: #B1B2FF;
+    --color-secondary: #AAC4FF;
+    --color-purple-pastel: #D2DAFF;
+    --color-blue-pastel: #EEF1FF;
+    --color-yellow-green: #ADFF2F;
+    --color-red-crimson: #DC143C;
+    --color-light-green: #90EE90;
+    --color-warning: #FFD700;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}

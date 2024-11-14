@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { BehaviorSubject } from 'rxjs';
 import { FirebaseStorageService } from './storage.service';
 
 export interface Timer {
@@ -19,6 +20,9 @@ export interface TimerStatus {
 @Injectable()
 export class TimerService {
 
+    private timerSubject = new BehaviorSubject<Timer>({ min: 0, sec: 0 });
+    timer$ = this.timerSubject.asObservable();
+
     timers: TimerStatus[] = [];
 
     timerObject: Timer = {
@@ -37,6 +41,7 @@ export class TimerService {
     async getTimer() {
         const timer = await this.firebaseStorageService.getTimer();
         this.timerObject = timer ? timer : { min: 0, sec: 0 };
+        this.timerSubject.next(this.timerObject);
     }
 
     updateContador(timer: Timer = this.timerObject) {
@@ -45,14 +50,13 @@ export class TimerService {
         console.log(timer);
 
         this.firebaseStorageService.updateTimer(timer);
+        this.timerSubject.next(timer);
     }
 
     changeTimer() {
         this.timerStatus = !this.timerStatus;
         if (this.timerStatus) {
             this.startTimer();
-        } else {
-            this.stopTimer();
         }
     }
 

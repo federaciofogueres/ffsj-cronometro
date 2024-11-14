@@ -1,1 +1,19 @@
-<p>timer works!</p>
+<div class="d-flex justify-content-center align-items-center timer" [ngClass]="[timerColorClass, fullScreen, containerClass, paddingClass]">
+    <div class="row">
+        <div class="col">
+            <p>
+                {{timer.minutes}}
+            </p>
+        </div>
+        <div class="col">
+            <p>
+                :
+            </p>
+        </div>
+        <div class="col">
+            <p>
+                {{timer.seconds}}
+            </p>
+        </div>
+    </div>
+</div>
