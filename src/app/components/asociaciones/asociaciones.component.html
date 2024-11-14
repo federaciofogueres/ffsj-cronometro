@@ -1,0 +1,32 @@
+@if(view === 'list') {
+<div class="container p-5">
+    <div class="listado">
+        <table class="w-100">
+            <tbody>
+                <tr>
+                    <th>Asociación</th>
+                    <th>Ver</th>
+                </tr>
+                @for(association of associations; track $index) {
+                <tr>
+                    <td>{{ association.title }}</td>
+                    <td>
+                        <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="visibility"
+                            (click)="changeView(association)"></mat-icon>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-5">
+        <button class="btn btn-primary create-button" (click)="changeView()">Crear asociación</button>
+    </div>
+
+</div>
+}
+
+@if(view === 'component') {
+<app-asociacion [association]="asociacionSelected!" (onBack)="changeView()"></app-asociacion>
+}

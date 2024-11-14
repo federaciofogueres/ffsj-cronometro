@@ -1,0 +1,44 @@
+@if(!manageVarticipantesShow) {
+<div class="container">
+    <div class="row my-3">
+        <div class="col-2 d-flex p-0 align-items-center justify-content-center">
+            <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="arrow_back"
+                (click)="back()"></mat-icon>
+        </div>
+        <div class="col p-0">
+            <h1 class="m-0">Datos de la sesión</h1>
+        </div>
+    </div>
+    <form class="container" [formGroup]="newSessionForm">
+        <mat-form-field class="example-full-width">
+            <mat-label>ID</mat-label>
+            <input matInput formControlName="id">
+        </mat-form-field>
+        <mat-form-field class="example-full-width">
+            <mat-label>Sesión</mat-label>
+            <input matInput formControlName="session_title">
+        </mat-form-field>
+        <mat-form-field class="example-full-width">
+            <mat-label>Tipo de sesión</mat-label>
+            <input matInput formControlName="type">
+        </mat-form-field>
+    </form>
+
+    <div class="row w-75 m-auto">
+        <button class="btn btn-primary my-3 col-12 action-button" (click)="manageParticipants()">Administrar
+            participantes</button>
+        <button class="btn btn-primary my-3 col-12 col-md-6 action-button" (click)="processAction()">{{action}}</button>
+        @if(action === 'Editar') {
+        <button class="btn btn-primary my-3 col-12 col-md-6 action-button delete-button"
+            (click)="delete(session.id!)">Borrar</button>
+        }
+    </div>
+</div>
+} @else {
+<div class="container">
+    <app-participantes [session]="session"></app-participantes>
+    <div class="row">
+        <button class="btn btn-primary action-button" (click)="manageParticipants()">Volver</button>
+    </div>
+</div>
+}

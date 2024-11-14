@@ -1,0 +1,23 @@
+.button-no-style {
+    background-color: unset;
+    border: unset;
+    color: unset;
+    font-weight: unset;
+    text-transform: uppercase;
+    white-space: normal;
+    word-wrap: break-word;
+    height: auto;
+    overflow-y: auto;
+}
+
+.session-list {
+    max-width: 90%;
+
+    .session-item {
+        font-size: 1rem;
+        white-space: normal;
+        word-wrap: break-word;
+        height: auto;
+        overflow-y: auto;
+    }
+}

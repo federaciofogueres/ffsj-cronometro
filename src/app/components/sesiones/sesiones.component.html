@@ -1,0 +1,28 @@
+<div class="container p-5" *ngIf="view === 'list'">
+    <div class="listado">
+        <table class="w-100">
+            <tbody>
+                <tr>
+                    <th>Sesión</th>
+                    <th>Ver</th>
+                </tr>
+                @for(session of sessions; track $index) {
+                <tr>
+                    <td>{{ session.session_title }}</td>
+                    <td>
+                        <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="visibility"
+                            (click)="changeView(session)"></mat-icon>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-5">
+        <button class="btn btn-primary create-button" (click)="changeView()">Crear sesión</button>
+    </div>
+
+</div>
+
+<app-sesion *ngIf="view === 'component'" [session]="sessionSelected!" (onBack)="changeView()"></app-sesion>

@@ -1,0 +1,19 @@
+.container {
+    max-width: unset;
+
+    //font-size: 1.5rem;
+    .listado {
+        overflow: auto;
+    }
+}
+
+.create-button {
+    min-width: 5rem;
+    max-width: 15rem;
+    width: 75%;
+    margin: auto;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: darken($color: #EEF1FF, $amount: 40);
+    background-color: var(--color-blue-pastel);
+}

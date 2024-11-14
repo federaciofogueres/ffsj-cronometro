@@ -1,0 +1,23 @@
+<div class="container p-3" *ngIf="!loading">
+    <div class="row">
+        <div class="col">
+            <h1>Asociaciones</h1>
+        </div>
+        <div class="col-5">
+            <h1>Seleccionar</h1>
+        </div>
+    </div>
+    <div class="row" *ngFor="let asociacion of asociacionesShow">
+        <div class="col">
+            <p>
+                {{asociacion.title}}
+            </p>
+        </div>
+        <div class="col-5">
+            <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="check_box_outline_blank"
+                (click)="checkAsociacion(asociacion)" *ngIf="!asociacion.checked"></mat-icon>
+            <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="check_box"
+                (click)="checkAsociacion(asociacion)" *ngIf="asociacion.checked"></mat-icon>
+        </div>
+    </div>
+</div>

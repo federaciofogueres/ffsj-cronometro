@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { TimerService } from '../../services/timer.service';
+import { SelectorComponent } from "../selector/selector.component";
 import { TimerComponent } from '../timer/timer.component';
 
 export type TimerTitleType = 'entrada' | 'salida';
@@ -8,7 +9,7 @@ export type TimerTitleType = 'entrada' | 'salida';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [TimerComponent],
+  imports: [TimerComponent, SelectorComponent, SelectorComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'
 })

@@ -10,5 +10,14 @@
                 Cronómetro FFSJ
             </span>
         </div>
+        <mat-icon aria-hidden="false" fontIcon="menu" (click)="openNav()"></mat-icon>
     </div>
+</div>
+
+<div id="mySidenav" class="sidenav" [ngClass]="{'open': sidenavOpen}">
+    <a href="javascript:void(0)" class="closebtn" (click)="closeNav()">×</a>
+    <a (click)="navigateTo('admin')">Administración</a>
+    <a (click)="navigateTo('asociaciones')">Asociaciones</a>
+    <a (click)="navigateTo('sesiones')">Sesiones</a>
+    <a (click)="authService.logout()">Cerrar sesión</a>
 </div>

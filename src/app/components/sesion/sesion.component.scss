@@ -1,0 +1,26 @@
+.example-form {
+    min-width: 150px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.example-full-width {
+    width: 100%;
+}
+
+.action-button {
+    min-width: 5rem;
+    max-width: 15rem;
+    width: 75%;
+    margin: auto;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: darken($color: #EEF1FF, $amount: 40);
+    background-color: var(--color-blue-pastel);
+}
+
+.action-button.delete-button {
+    border-color: darken($color: #DC143C, $amount: 20);
+    color: darken($color: #DC143C, $amount: 20);
+    background-color: lighten($color: #DC143C, $amount: 30);
+}
