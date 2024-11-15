@@ -41,6 +41,7 @@ export class SesionComponent {
 
   loading: boolean = true;
   action: Action = 'Crear';
+  formatedDate: boolean = false;
 
   manageVarticipantesShow: boolean = false;
   asociacionesRelatedToSesion: Asociacion[] = [];
@@ -55,7 +56,11 @@ export class SesionComponent {
   ) { }
 
   ngOnInit() {
-    this.getTypeSesion();
+    this.loadData();
+  }
+
+  async loadData() {
+    await this.getTypeSesion();
     this.choreService.asociacionesSelectedsObservable.subscribe(res => {
       this.asociacionesRelatedToSesion = res;
     })
@@ -84,24 +89,35 @@ export class SesionComponent {
   }
 
   loadForm() {
+    const tipoSession = this.tiposSesiones.find(t => t.id === Number(this.session.type));
     this.newSessionForm = this.fb.group({
       id: new FormControl(this.session.id, []),
       session_title: new FormControl(this.session.session_title, [Validators.required]),
-      type: new FormControl(this.session.type, Validators.required),
+      type: new FormControl(tipoSession, Validators.required),
       session_date: new FormControl('', Validators.required),
       session_time: new FormControl('', Validators.required)
     });
+    if (this.action === 'Editar') {
+      let titleSplitted = this.session.session_title!.split(' - ');
+      this.reverseParseFecha(`${titleSplitted[2]} - ${titleSplitted[3]}`)
+    }
     this.loading = false;
   }
 
-  getTypeSesion() {
-    this.typeSesionService.getAllTypeSesion().subscribe({
-      next: (response: TypeSessionResponse) => {
-        console.log({ response });
-        this.tiposSesiones = response.types!;
-
-      }
-    })
+  getTypeSesion(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.typeSesionService.getAllTypeSesion().subscribe({
+        next: (response: TypeSessionResponse) => {
+          console.log({ response });
+          this.tiposSesiones = response.types!;
+          resolve();
+        },
+        error: (err) => {
+          console.error(err);
+          reject(err);
+        }
+      });
+    });
   }
 
   processAction() {
@@ -137,6 +153,10 @@ export class SesionComponent {
   }
 
   update(session: Session): void {
+    session.id = session.id?.toString();
+    if (this.formatedDate) {
+      session.session_title = `${session.type_normalized} - ${session.session_title}`
+    }
     this.sessionService.putSesion(session.id!, session).subscribe((res: InlineResponse200) => {
       if (res.status?.code === '200') {
         this.back();
@@ -180,7 +200,24 @@ export class SesionComponent {
 
       const formattedDate = `${dayName} ${day} ${monthName} ${year} - ${hours}:${minutes}h`;
       this.newSessionForm.get('session_title')?.setValue(formattedDate);
+      this.formatedDate = true;
     }
+  }
+
+  reverseParseFecha(formattedDate: string) {
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    const [dayName, day, monthName, year, time] = formattedDate.split(/[\s-]+/);
+    const hoursMinutes = time.split('h')[0].split(':');
+
+    const monthIndex = monthNames.indexOf(monthName);
+    const date = new Date(Number(year), monthIndex, Number(day));
+    const hours = hoursMinutes[0];
+    const minutes = hoursMinutes[1];
+
+    this.newSessionForm.get('session_date')?.setValue(date);
+    this.newSessionForm.get('session_time')?.setValue(`${hours}:${minutes}`);
   }
 
 }
