@@ -3,7 +3,7 @@
 .container-timer {
     padding: unset;
     margin: unset;
-    height: calc(100vh - 104px);
+    height: calc(100vh - 65px);
 
     .timers {
         .titles {
@@ -60,4 +60,8 @@
     .timer {
         height: 20vh !important;
     }
+}
+
+.h-100-timer {
+    height: calc(100% - 96px);
 }
