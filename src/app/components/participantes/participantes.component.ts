@@ -56,7 +56,10 @@ export class ParticipantesComponent {
   loadAsociacionesData() {
     this.asociacionesService.getAllAsociaciones().subscribe((asociaciones: AsociacionesResponse) => {
       if (asociaciones.status?.code === '200') {
-        this.asociaciones = asociaciones.participants!;
+        this.asociaciones = asociaciones.participants!.sort((a, b) => {
+          if (!a.title || !b.title) return 0;
+          return a.title.localeCompare(b.title);
+        });
         asociaciones.participants?.map(asociacion => {
           this.asociacionesShow.push({ id: asociacion.id!, title: asociacion.title!, checked: false });
         })
