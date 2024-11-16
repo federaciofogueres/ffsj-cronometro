@@ -24,12 +24,16 @@ export class ChoreService {
 
   setSessionSelected(session: Session | null) {
     this.sessionSelected$.next(session);
-    this.cookieService.set('session', session?.id!)
+    if(Boolean(session?.id)) {
+      this.cookieService.set('session', session?.id!)
+    }
   }
 
   setAsociacionSelected(asociacion: Asociacion | null) {
     this.asociacionselected$.next(asociacion);
-    this.cookieService.set('asociacion', asociacion?.id!)
+    if (Boolean(asociacion?.id)){
+      this.cookieService.set('asociacion', asociacion?.id!)
+    }
   }
 
   addAsociacionesSelected(asociacion: Asociacion) {
