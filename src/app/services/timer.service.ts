@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
 import { FirebaseStorageService } from './storage.service';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface Timer {
     min: number,
@@ -26,27 +27,41 @@ export class TimerService {
     timers: TimerStatus[] = [];
 
     timerObject: Timer = {
-        min: 4,
-        sec: 0
+        min: this.cookieService.get('minutes') !== null ? parseInt(this.cookieService.get('minutes')!) : 4,
+        sec: this.cookieService.get('seconds') !== null ? parseInt(this.cookieService.get('seconds')!) : 0
     }
 
     timerStatus: boolean = false;
 
+    timerReal: Timer = { min: 0, sec: 0 };
+
     constructor(
-        private firebaseStorageService: FirebaseStorageService
+        private firebaseStorageService: FirebaseStorageService,
+        private cookieService: CookieService
     ) {
         this.getTimer();
+        this.getRealtimeTimer();
     }
+
+    getRealtimeTimer() {
+        this.firebaseStorageService.getRealtimeTimer().subscribe((timer: Timer) => {
+          this.timerReal = timer;
+          this.timerSubject.next(timer);
+        });
+      }
 
     async getTimer() {
-        const timer = await this.firebaseStorageService.getTimer();
-        this.timerObject = timer ? timer : { min: 0, sec: 0 };
-        this.timerSubject.next(this.timerObject);
-    }
+        try {
+          const timer = await this.firebaseStorageService.getTimerValues();
+          this.timerReal = timer;
+        } catch (error) {
+          console.error('Error getting timer values:', error);
+        }
+      }
 
     updateContador(timer: Timer = this.timerObject) {
-        // localStorage.setItem('minutes', this.timerObject.min.toString())
-        // localStorage.setItem('seconds', this.timerObject.sec.toString())
+        this.cookieService.set('minutes', timer.min.toString());
+        this.cookieService.set('seconds', timer.sec.toString());
         console.log(timer);
 
         this.firebaseStorageService.updateTimer(timer);
