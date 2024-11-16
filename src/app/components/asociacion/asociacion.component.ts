@@ -122,6 +122,7 @@ export class AsociacionComponent {
   }
 
   createAssociation(association: Asociacion): void {
+    association.id = association.id?.toString();
     this.associationService.createAsociacion(association).subscribe((res: InlineResponse200) => {
       console.log(res)
       if (res.status?.code === '200') {
