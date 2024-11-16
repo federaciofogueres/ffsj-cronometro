@@ -27,8 +27,8 @@ export class TimerService {
     timers: TimerStatus[] = [];
 
     timerObject: Timer = {
-        min: this.cookieService.get('minutes') !== null ? parseInt(this.cookieService.get('minutes')!) : 4,
-        sec: this.cookieService.get('seconds') !== null ? parseInt(this.cookieService.get('seconds')!) : 0
+        min: Boolean(this.cookieService.get('minutes')) ? parseInt(this.cookieService.get('minutes')!) : 4,
+        sec: Boolean(this.cookieService.get('seconds')) ? parseInt(this.cookieService.get('seconds')!) : 0
     }
 
     timerStatus: boolean = false;

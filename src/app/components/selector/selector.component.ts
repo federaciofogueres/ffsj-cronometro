@@ -77,7 +77,7 @@ export class SelectorComponent {
       if (res.status?.code === '200') {
         this.sessions = res.sessions!;
         if (Boolean(this.selectedSessionId)) {
-          this.selectedSession = this.sessions.find(sesion => sesion.id === this.selectedSessionId)!;
+          this.selectedSession = this.sessions.find(sesion => sesion.id?.toString() === this.selectedSessionId)!;
           this.choreService.setSessionSelected(this.selectedSession);
         }
         this.loading = false;
