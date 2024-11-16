@@ -1,6 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { child, Database, get, ref, update } from '@angular/fire/database';
+import { child, Database, get, onValue, ref, update } from '@angular/fire/database';
+
 import { Timer } from './timer.service';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -9,7 +11,21 @@ export class FirebaseStorageService {
 
     private _database = inject(Database);
 
-    constructor() { }
+    constructor(
+    ) { }
+
+    getRealtimeTimer(): Observable<Timer> {
+        const timerSubject = new Subject<Timer>();
+        const dbRef = ref(this._database, 'timer');
+        onValue(dbRef, (snapshot) => {
+          if (snapshot.exists()) {
+            timerSubject.next(snapshot.val() as Timer);
+          } else {
+            console.error('No data available');
+          }
+        });
+        return timerSubject.asObservable();
+      }
 
     async getTimerValues() {
         const dbRef = ref(this._database);

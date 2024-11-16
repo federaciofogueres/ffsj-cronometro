@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { TimerService, TimerStatus } from '../../services/timer.service';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface TimerClockModel {
   minutes: string;
@@ -38,8 +39,8 @@ export class TimerComponent {
   }
 
   timer: TimerClockModel = {
-    minutes: '04',
-    seconds: '00',
+    minutes: this.cookieService.get('minutes') !== null ? this.cookieService.get('minutes')! : '04',
+    seconds: this.cookieService.get('seconds') !== null ? this.cookieService.get('seconds')! : '00',
   };
 
   loading: boolean = true;
@@ -58,7 +59,8 @@ export class TimerComponent {
   }
 
   constructor(
-    private timerService: TimerService
+    private timerService: TimerService,
+    private cookieService: CookieService
   ) {
     this.timerService.timer$.subscribe({
       next: (res: any) => {
