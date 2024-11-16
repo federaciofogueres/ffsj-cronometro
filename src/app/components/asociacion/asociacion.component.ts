@@ -4,8 +4,11 @@ import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { Asociacion, AsociacionesService, InlineResponse200 } from '../../../api';
+import { CensoService } from '../../services/censo.service';
+import { ResponseAsociaciones } from '../../services/external-api/external-api';
 
 export type Action = 'Crear' | 'Editar';
 
@@ -18,7 +21,8 @@ export type Action = 'Crear' | 'Editar';
     MatFormFieldModule,
     MatIconModule,
     CommonModule,
-    MatInputModule
+    MatInputModule,
+    MatSelectModule
   ],
   templateUrl: './asociacion.component.html',
   styleUrl: './asociacion.component.scss'
@@ -31,7 +35,20 @@ export class AsociacionComponent {
   loading: boolean = true;
   action: Action = 'Crear';
 
+  asociaciones: any[] = [];
+
   ngOnInit() {
+    this.loadData();
+  }
+
+  constructor(
+    private fb: FormBuilder,
+    private associationService: AsociacionesService,
+    private censoService: CensoService,
+    private router: Router
+  ) { }
+
+  async loadData() {
     if (!Boolean(this.association)) {
       console.log('No existe')
       this.association = {
@@ -43,22 +60,47 @@ export class AsociacionComponent {
     } else {
       this.action = 'Editar';
     }
+    await this.loadAsociaciones();
     this.loadForm();
   }
 
-  constructor(
-    private fb: FormBuilder,
-    private associationService: AsociacionesService,
-    private router: Router
-  ) { }
+  loadAsociaciones() {
+    return new Promise((resolve, reject) => {
+      this.censoService.asociacionesGet().subscribe({
+        next: (res: ResponseAsociaciones) => {
+          this.asociaciones = res.asociaciones!.filter(asociacion => asociacion['tipo_asociacion'] === 2);
+          resolve(true);
+        }
+      })
+    })
+  }
 
   loadForm() {
     this.newAssociationForm = this.fb.group({
-      id: new FormControl(this.association.id, Validators.required),
+      id: new FormControl(this.association.id, []),
       email: new FormControl(this.association.email, [Validators.required, Validators.email]),
-      title: new FormControl(this.association.title, Validators.required),
+      title: new FormControl(this.association.title, []),
+      asociacion: new FormControl('', [Validators.required])
     });
+    if (this.action === 'Editar') {
+      this.newAssociationForm.controls['asociacion'].disable();
+    }
     this.loading = false;
+  }
+
+  asociacionSelected(event: any) {
+    this.newAssociationForm.controls['id'].setValue(event.value.id);
+    this.newAssociationForm.controls['title'].setValue(event.value.nombre);
+    if(this.action === 'Editar') {
+      this.associationService.getAsociacion(event.value.id).subscribe((res: any) => {
+        if (res.status?.code === '200') {
+          this.newAssociationForm.controls['email'].setValue(res['session']?.email);
+        }
+      })
+    } else {
+      this.newAssociationForm.controls['email'].setValue(event.value.email);
+      this.newAssociationForm.controls['title'].disable();
+    }
   }
 
   processAction() {

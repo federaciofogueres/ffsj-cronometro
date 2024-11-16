@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService, FfsjAlertService, FfsjLoginComponent } from 'ffsj-web-components';
 import { jwtDecode } from "jwt-decode";
 import { CookieService } from 'ngx-cookie-service';
+import { CensoService } from '../../services/censo.service';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,8 @@ export class LoginComponent {
     private router: Router,
     private ffsjAlertService: FfsjAlertService,
     private authService: AuthService,
-    private cookiesService: CookieService
+    private cookiesService: CookieService,
+    private censoService: CensoService
   ) {}
 
   manageLogin(event: any) {
@@ -46,6 +48,7 @@ export class LoginComponent {
   }
 
   setTokenConfigurations(token: string) {
+    this.censoService.configuration.accessToken = token;
   }
 
 }

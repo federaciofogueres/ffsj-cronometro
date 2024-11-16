@@ -10,9 +10,9 @@ import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     { path: '', component: TimerFullscreenComponent },
-    { path: 'sesiones', component: SesionesComponent },
-    { path: 'asociaciones', component: AsociacionesComponent },
-    { path: 'timer', component: TimerFullscreenComponent },
+    { path: 'sesiones', component: SesionesComponent, canActivate: [AuthGuard] },
+    { path: 'asociaciones', component: AsociacionesComponent, canActivate: [AuthGuard] },
+    { path: 'timer', component: TimerFullscreenComponent, canActivate: [AuthGuard] },
     { path: 'validar', component: ConfirmRegistrationComponent, canActivate: [AuthGuard] },
     { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },
