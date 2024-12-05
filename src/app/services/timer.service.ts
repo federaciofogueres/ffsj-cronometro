@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 
+import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject } from 'rxjs';
 import { FirebaseStorageService } from './storage.service';
-import { CookieService } from 'ngx-cookie-service';
 
 export interface Timer {
     min: number,
@@ -27,8 +27,8 @@ export class TimerService {
     timers: TimerStatus[] = [];
 
     timerObject: Timer = {
-        min: Boolean(this.cookieService.get('minutes')) ? parseInt(this.cookieService.get('minutes')!) : 4,
-        sec: Boolean(this.cookieService.get('seconds')) ? parseInt(this.cookieService.get('seconds')!) : 0
+        min: Boolean(this.cookieService.get('minutes')) ? parseInt(this.cookieService.get('minutes')!) : 3,
+        sec: Boolean(this.cookieService.get('seconds')) ? parseInt(this.cookieService.get('seconds')!) : 30
     }
 
     timerStatus: boolean = false;
@@ -45,19 +45,19 @@ export class TimerService {
 
     getRealtimeTimer() {
         this.firebaseStorageService.getRealtimeTimer().subscribe((timer: Timer) => {
-          this.timerReal = timer;
-          this.timerSubject.next(timer);
+            this.timerReal = timer;
+            this.timerSubject.next(timer);
         });
-      }
+    }
 
     async getTimer() {
         try {
-          const timer = await this.firebaseStorageService.getTimerValues();
-          this.timerReal = timer;
+            const timer = await this.firebaseStorageService.getTimerValues();
+            this.timerReal = timer;
         } catch (error) {
-          console.error('Error getting timer values:', error);
+            console.error('Error getting timer values:', error);
         }
-      }
+    }
 
     updateContador(timer: Timer = this.timerObject) {
         this.cookieService.set('minutes', timer.min.toString());
@@ -93,8 +93,8 @@ export class TimerService {
     }
 
     resetTimer() {
-        this.timerObject.min = 4;
-        this.timerObject.sec = 0;
+        this.timerObject.min = 3;
+        this.timerObject.sec = 30;
         this.updateContador()
     }
 
