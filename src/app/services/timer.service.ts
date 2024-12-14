@@ -21,19 +21,19 @@ export interface TimerStatus {
 @Injectable()
 export class TimerService {
 
-    private timerSubject = new BehaviorSubject<Timer>({ min: 0, sec: 0 });
+    private timerSubject = new BehaviorSubject<Timer>({ min: 8, sec: 0 });
     timer$ = this.timerSubject.asObservable();
 
     timers: TimerStatus[] = [];
 
     timerObject: Timer = {
-        min: Boolean(this.cookieService.get('minutes')) ? parseInt(this.cookieService.get('minutes')!) : 3,
-        sec: Boolean(this.cookieService.get('seconds')) ? parseInt(this.cookieService.get('seconds')!) : 30
+        min: Boolean(this.cookieService.get('minutes')) ? parseInt(this.cookieService.get('minutes')!) : 8,
+        sec: Boolean(this.cookieService.get('seconds')) ? parseInt(this.cookieService.get('seconds')!) : 0,
     }
 
     timerStatus: boolean = false;
 
-    timerReal: Timer = { min: 0, sec: 0 };
+    timerReal: Timer = { min: 8, sec: 0 };
 
     constructor(
         private firebaseStorageService: FirebaseStorageService,
@@ -93,8 +93,8 @@ export class TimerService {
     }
 
     resetTimer() {
-        this.timerObject.min = 3;
-        this.timerObject.sec = 30;
+        this.timerObject.min = 8;
+        this.timerObject.sec = 0;
         this.updateContador()
     }
 

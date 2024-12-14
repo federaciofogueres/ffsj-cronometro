@@ -39,8 +39,8 @@ export class TimerComponent {
   }
 
   timer: TimerClockModel = {
-    minutes: Boolean(this.cookieService.get('minutes')) ? this.cookieService.get('minutes')! : '03',
-    seconds: Boolean(this.cookieService.get('seconds')) ? this.cookieService.get('seconds')! : '30',
+    minutes: Boolean(this.cookieService.get('minutes')) ? this.cookieService.get('minutes')! : '08',
+    seconds: Boolean(this.cookieService.get('seconds')) ? this.cookieService.get('seconds')! : '00',
   };
 
   loading: boolean = true;
