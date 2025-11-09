@@ -1,74 +1,35 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TimerService } from '../../services/timer.service';
-import { SelectorComponent } from "../selector/selector.component";
-import { TimerComponent } from '../timer/timer.component';
-
-export type TimerTitleType = 'entrada' | 'salida';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [TimerComponent, SelectorComponent, SelectorComponent],
+  imports: [FormsModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss'
 })
 export class AdminComponent {
 
-  timerTitle: TimerTitleType = 'entrada';
+  // propiedades vinculadas al editor
+  initialMin: number = 3;
+  initialSec: number = 30;
 
-  timerEntry = {
-    min: 0,
-    sec: 0
-  }
+  constructor(private timerService: TimerService) { }
 
-  timerExit = {
-    min: 0,
-    sec: 0
-  }
+  /**
+   * Establece el valor inicial del timer en toda la app.
+   * Usa setInitialTimer para que resetTimer utilice este valor.
+   */
+  setInitialTimer(): void {
+    const min = Math.max(0, Number(this.initialMin) || 0);
+    const sec = Math.min(59, Math.max(0, Number(this.initialSec) || 0));
 
-  loading: boolean = true;
+    // llama al método específico que guarda initialTimer y persiste las claves 'initialMinutes'/'initialSeconds'
+    this.timerService.setInitialTimer({ min, sec });
 
-  ngOnInit() {
-    let appHeader = document.querySelector('app-header');
-    ///appHeader?.remove();
-    appHeader?.setAttribute('style', 'display: flex')
-    this.loading = false;
-  }
-
-  constructor(
-    public timerService: TimerService,
-    private route: Router
-  ) {
-
-  }
-
-  resetTimer() {
-    this.timerService.resetTimer();
-  }
-
-  changeTimer() {
-    this.saveTimer();
-    this.resetTimer();
-    if (this.timerTitle === 'entrada') {
-      this.timerTitle = 'salida';
-    } else {
-      this.timerTitle = 'entrada';
-    }
-  }
-
-  saveTimer() {
-    if (this.timerTitle === 'entrada') {
-      this.timerService.saveTimer('entryTime');
-    } else {
-      this.timerService.saveTimer('exitTime');
-    }
-  }
-
-  goToConfirmation() {
-    this.saveTimer();
-    this.resetTimer();
-    this.route.navigateByUrl('validar')
+    // opcional: aplicar inmediatamente la configuración como timer actual:
+    // this.timerService.resetTimer();
   }
 
 }

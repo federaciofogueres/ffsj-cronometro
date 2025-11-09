@@ -121,7 +121,7 @@ export class ConfirmRegistrationComponent {
           this.emailStatus = 'sentOK';
           this.alertMessage = '¡Email enviado!';
           this.alertService.success(this.alertMessage);
-          this.router.navigateByUrl('admin');
+          this.router.navigateByUrl('admin-crono');
         } else {
           this.emailStatus = 'sentKO';
           this.alertMessage = 'No se pudo enviar el email.';

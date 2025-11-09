@@ -1,48 +1,14 @@
-@if(!loading) {
-<div class="container-timer">
-
-    <div class="d-flex flex-column">
-        <app-selector [type]="'session'"></app-selector>
-        <app-selector [type]="'asociacion'"></app-selector>
+<div class="row w-50">
+    <div class="col-6">
+        <label for="initialMin">Minutos iniciales</label>
+        <input id="initialMin" type="number" class="form-control" [(ngModel)]="initialMin" min="0">
     </div>
-
-    <div class="h-100-timer d-flex flex-column justify-content-around">
-        <div class="p-3 timers">
-            <div class="row d-flex text-center titles">
-                <div class="col">
-                    <span class="h1">
-                        {{timerTitle === 'entrada' ? 'Tiempo de entrada' : 'Tiempo de salida'}}
-                    </span>
-                </div>
-            </div>
-
-            <div class="row my-3 timer">
-                <app-timer></app-timer>
-            </div>
-            <div class="row">
-                <div class="col d-flex justify-content-center timer-button">
-                    @if(!timerService.timerStatus) {
-                    <button (click)="timerService.changeTimer()"
-                        class="btn btn-success activate-button">Activar</button>
-                    } @else {
-                    <button (click)="timerService.changeTimer()" class="btn btn-danger stop-button">Parar</button>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <div class="h-100 d-flex flex-column justify-content-around">
-
-            <div class="d-flex flex-column mx-auto w-75">
-                <button (click)="resetTimer()" class="btn btn-foc-rojo stop-button">Reset</button>
-            </div>
-            <div class="d-flex flex-column mx-auto gap-3 w-75">
-                <button (click)="changeTimer()" class="btn btn-foc-naranja send-button">
-                    {{timerTitle === 'entrada' ? 'Crono Salida' : 'Crono Entrada'}}</button>
-                <button (click)="goToConfirmation()" class="btn btn-foc-naranja w-100">Validar registro</button>
-            </div>
-        </div>
+    <div class="col-6">
+        <label for="initialSec">Segundos iniciales</label>
+        <input id="initialSec" type="number" class="form-control" [(ngModel)]="initialSec" min="0" max="59">
     </div>
-
 </div>
-}
+
+<div class="mt-2">
+    <button class="btn btn-primary" (click)="setInitialTimer()">Establecer timer inicial</button>
+</div>
