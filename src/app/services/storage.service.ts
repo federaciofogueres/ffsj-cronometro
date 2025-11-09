@@ -1,8 +1,10 @@
+// ...existing code...
 import { inject, Injectable } from '@angular/core';
 import { child, Database, get, onValue, ref, update } from '@angular/fire/database';
+import { serverTimestamp } from 'firebase/database';
 
-import { Timer } from './timer.service';
 import { Observable, Subject } from 'rxjs';
+import { Timer } from './timer.service';
 
 @Injectable({
     providedIn: 'root'
@@ -18,14 +20,14 @@ export class FirebaseStorageService {
         const timerSubject = new Subject<Timer>();
         const dbRef = ref(this._database, 'timer');
         onValue(dbRef, (snapshot) => {
-          if (snapshot.exists()) {
-            timerSubject.next(snapshot.val() as Timer);
-          } else {
-            console.error('No data available');
-          }
+            if (snapshot.exists()) {
+                timerSubject.next(snapshot.val() as Timer);
+            } else {
+                console.error('No data available');
+            }
         });
         return timerSubject.asObservable();
-      }
+    }
 
     async getTimerValues() {
         const dbRef = ref(this._database);
@@ -52,7 +54,9 @@ export class FirebaseStorageService {
 
     async updateTimer(timer: Timer): Promise<void> {
         const dbRef = ref(this._database, 'timer');
-        await update(dbRef, timer);
+        // Use server timestamp for updatedAt to avoid relying on client clocks.
+        const payload: any = { ...timer, updatedAt: serverTimestamp() };
+        await update(dbRef, payload);
     }
 
 }
