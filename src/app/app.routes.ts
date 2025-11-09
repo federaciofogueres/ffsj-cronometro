@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminCronoComponent } from './components/admin-crono/admin-crono.component';
 import { AdminComponent } from './components/admin/admin.component';
 import { AsociacionesComponent } from './components/asociaciones/asociaciones.component';
 import { ConfirmRegistrationComponent } from './components/confirm-registration/confirm-registration.component';
@@ -14,6 +15,7 @@ export const routes: Routes = [
     { path: 'asociaciones', component: AsociacionesComponent, canActivate: [AuthGuard] },
     { path: 'timer', component: TimerFullscreenComponent, canActivate: [AuthGuard] },
     { path: 'validar', component: ConfirmRegistrationComponent, canActivate: [AuthGuard] },
+    { path: 'admin-crono', component: AdminCronoComponent, canActivate: [AuthGuard] },
     { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },
     { path: '**', component: TimerComponent },

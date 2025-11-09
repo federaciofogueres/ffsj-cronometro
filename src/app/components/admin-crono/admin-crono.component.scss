@@ -1,0 +1,67 @@
+@import '../../../variables.scss';
+
+.container-timer {
+    padding: unset;
+    margin: unset;
+    height: calc(100vh - 65px);
+
+    .timers {
+        .titles {
+            font-weight: bold;
+        }
+
+        .timer {
+            height: 50vh;
+        }
+
+        .times {
+            background-color: var(--color-blue-pastel);
+        }
+
+        .timer-button {
+            button {
+                aspect-ratio: 1 / 1;
+                border-radius: 50%;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+
+            .activate-button {
+                background-color: var(--color-light-green);
+                border-color: var(--color-light-green);
+                color: darken($color: #90EE90, $amount: 40);
+            }
+
+            .stop-button {
+                background-color: var(--color-red-crimson);
+            }
+        }
+
+        // .options-button {
+        //     button {
+        //         width: 7.961rem;
+        //     }
+        // }
+
+
+    }
+
+    // .send-container {
+    //     .send-button {
+    //         font-weight: bold;
+    //         text-transform: uppercase;
+    //         color: darken($color: #EEF1FF, $amount: 40);
+    //         background-color: var(--color-blue-pastel);
+    //     }
+    // }
+}
+
+@media screen and (width < 768px) {
+    .timer {
+        height: 20vh !important;
+    }
+}
+
+.h-100-timer {
+    height: calc(100% - 96px);
+}
