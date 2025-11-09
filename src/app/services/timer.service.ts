@@ -1,3 +1,4 @@
+// ...existing code...
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject } from 'rxjs';
@@ -7,7 +8,7 @@ export interface Timer {
     min: number;
     sec: number;
     updatedAt?: number; // ms epoch
-    running?: boolean; // opcional: si el timer está activo
+    running?: boolean;
 }
 
 export interface TimerStatus {
@@ -44,6 +45,10 @@ export class TimerService {
     // último timestamp local aplicado; sólo aplicamos remotos más recientes
     private localLastUpdatedAt = Date.now();
 
+    // seguimiento de recepción realtime para watchdog
+    private realtimeLastReceivedAt = 0;
+    private realtimeStaleMs = 15000; // si no llega update en este tiempo, seguir tickeando localmente
+
     constructor(
         private firebaseStorageService: FirebaseStorageService,
         private cookieService: CookieService
@@ -67,8 +72,9 @@ export class TimerService {
 
         this.timerSubject.next({ ...this.timerObject });
 
-        // escuchar Firebase realtime
+        // escuchar Firebase realtime y watchdog opcional
         this.getRealtimeTimer();
+        this.startRealtimeWatchdog();
         // one-shot inicial
         this.getTimer();
     }
@@ -77,39 +83,41 @@ export class TimerService {
         this.firebaseStorageService.getRealtimeTimer().subscribe((remote: any) => {
             if (!remote) return;
 
+            const now = Date.now();
+            this.realtimeLastReceivedAt = now;
+
             // evitar aplicar updates inmediatamente después de nuestros writes locales
-            if (Date.now() < this.suppressRealtimeUntil) return;
+            if (now < this.suppressRealtimeUntil) return;
 
             const remoteTs = remote.updatedAt ?? 0;
-            // si remoto no es más reciente, ignorar
-            if (remoteTs <= this.localLastUpdatedAt) return;
+            const remoteIsNewer = remoteTs > this.localLastUpdatedAt;
 
-            // aplicar remoto
-            this.timerReal = { min: remote.min, sec: remote.sec, updatedAt: remoteTs, running: !!remote.running };
-            this.timerObject = { ...this.timerReal };
-            this.localLastUpdatedAt = remoteTs;
+            // aplicar remoto si es más reciente o si indica running (para asegurar que listeners arranquen)
+            if (remoteIsNewer || !!remote.running) {
+                this.timerReal = { min: remote.min, sec: remote.sec, updatedAt: remoteTs, running: !!remote.running };
+                this.timerObject = { ...this.timerReal };
+                this.localLastUpdatedAt = Math.max(this.localLastUpdatedAt, remoteTs);
 
-            // publicar a subscriptores (UI)
-            this.timerSubject.next({ ...this.timerObject });
+                // publicar a subscriptores (UI)
+                this.timerSubject.next({ ...this.timerObject });
 
-            // sincronizar estado de ejecución local con remoto:
+                // persistir en cookies
+                this.cookieService.set('minutes', String(this.timerObject.min));
+                this.cookieService.set('seconds', String(this.timerObject.sec));
+            }
+
+            // sincronizar estado de ejecución local con remoto
             if (remote.running) {
-                // arrancar ticking local (si no estaba)
                 if (!this.timerStatus) {
                     this.timerStatus = true;
                     this.startTickerLoop();
                 }
             } else {
-                // parar ticking local
                 if (this.timerStatus) {
                     this.timerStatus = false;
                     this.clearTickerLoop();
                 }
             }
-
-            // persistir en cookies para reloads
-            this.cookieService.set('minutes', String(this.timerObject.min));
-            this.cookieService.set('seconds', String(this.timerObject.sec));
         });
     }
 
@@ -130,7 +138,7 @@ export class TimerService {
 
     /**
      * Actualiza estado local, cookies y escribe a Firebase con timestamp.
-     * Esta función marca suppressRealtimeUntil para evitar aplicar el evento realtime inmediato.
+     * Marca suppressRealtimeUntil para evitar aplicar el evento realtime inmediato.
      */
     updateContador(timer: Timer = this.timerObject): void {
         const now = Date.now();
@@ -204,7 +212,7 @@ export class TimerService {
                 }
             }
 
-            // publicar tick local inmediatamente
+            // publicar tick local inmediatamente (UI)
             this.timerSubject.next({ min: this.timerObject.min, sec: this.timerObject.sec, updatedAt: this.localLastUpdatedAt, running: true });
 
             // throttle escritura a firebase
@@ -266,5 +274,20 @@ export class TimerService {
         const idx = this.timers.findIndex(t => t.name === name);
         if (idx !== -1) this.timers[idx].value = timerStatus.value;
         else this.timers.push(timerStatus);
+    }
+
+    // Watchdog para mantener ticking en listeners si el remoto indicó running recientemente
+    private startRealtimeWatchdog(): void {
+        setInterval(() => {
+            const now = Date.now();
+            // si ya estamos tickeando local no hacemos nada
+            if (this.timerStatus) return;
+
+            // si el último remoto indicaba running y llegó recientemente, arrancamos loop local
+            if (this.timerReal.running && (now - this.realtimeLastReceivedAt) < this.realtimeStaleMs) {
+                this.timerStatus = true;
+                this.startTickerLoop();
+            }
+        }, 5000);
     }
 }
