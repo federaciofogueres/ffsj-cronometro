@@ -30,6 +30,7 @@ export class AdminCronoComponent {
   loading: boolean = true;
 
   ngOnInit() {
+    this.timerService.setController(true);
     let appHeader = document.querySelector('app-header');
     ///appHeader?.remove();
     appHeader?.setAttribute('style', 'display: flex')

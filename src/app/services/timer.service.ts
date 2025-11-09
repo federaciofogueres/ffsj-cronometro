@@ -1,4 +1,3 @@
-// ...existing code...
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject } from 'rxjs';
@@ -49,6 +48,10 @@ export class TimerService {
     private realtimeLastReceivedAt = 0;
     private realtimeStaleMs = 15000; // si no llega update en este tiempo, seguir tickeando localmente
 
+    // identifier para este cliente (reduce conflictos) y flag para permitir escrituras a Firebase
+    private clientId: string = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    private writeEnabled: boolean = false; // por defecto listeners NO escriben
+
     constructor(
         private firebaseStorageService: FirebaseStorageService,
         private cookieService: CookieService
@@ -79,6 +82,12 @@ export class TimerService {
         this.getTimer();
     }
 
+    // Permite marcar este cliente como controlador (admin). Llamar desde AdminCronoComponent.ngOnInit:
+    // this.timerService.setController(true);
+    setController(enabled: boolean): void {
+        this.writeEnabled = enabled;
+    }
+
     private getRealtimeTimer(): void {
         this.firebaseStorageService.getRealtimeTimer().subscribe((remote: any) => {
             if (!remote) return;
@@ -92,7 +101,7 @@ export class TimerService {
             const remoteTs = remote.updatedAt ?? 0;
             const remoteIsNewer = remoteTs > this.localLastUpdatedAt;
 
-            // aplicar remoto si es más reciente o si indica running (para asegurar que listeners arranquen)
+            // aplicar remoto si es más reciente o si indica running (para que listeners arranquen)
             if (remoteIsNewer || !!remote.running) {
                 this.timerReal = { min: remote.min, sec: remote.sec, updatedAt: remoteTs, running: !!remote.running };
                 this.timerObject = { ...this.timerReal };
@@ -106,7 +115,7 @@ export class TimerService {
                 this.cookieService.set('seconds', String(this.timerObject.sec));
             }
 
-            // sincronizar estado de ejecución local con remoto
+            // sincronizar estado de ejecución local con remoto (remote.running manda)
             if (remote.running) {
                 if (!this.timerStatus) {
                     this.timerStatus = true;
@@ -137,10 +146,11 @@ export class TimerService {
     }
 
     /**
-     * Actualiza estado local, cookies y escribe a Firebase con timestamp.
+     * Actualiza estado local, cookies y opcionalmente escribe a Firebase con timestamp.
      * Marca suppressRealtimeUntil para evitar aplicar el evento realtime inmediato.
+     * options.write: si true fuerza escritura; por defecto solo escribe si this.writeEnabled === true
      */
-    updateContador(timer: Timer = this.timerObject): void {
+    updateContador(timer: Timer = this.timerObject, options: { write?: boolean } = {}): void {
         const now = Date.now();
         this.timerObject = { min: timer.min, sec: timer.sec, updatedAt: now, running: !!timer.running };
         this.localLastUpdatedAt = now;
@@ -148,15 +158,20 @@ export class TimerService {
         this.cookieService.set('minutes', String(this.timerObject.min));
         this.cookieService.set('seconds', String(this.timerObject.sec));
 
-        // escribir a Firebase (incluye updatedAt y running)
-        try {
-            this.firebaseStorageService.updateTimer({ ...this.timerObject });
-        } catch (e) {
-            console.warn('updateContador firebase write failed', e);
+        const shouldWrite = options.write === true ? true : (options.write === false ? false : this.writeEnabled);
+
+        if (shouldWrite) {
+            try {
+                // agregar quien escribe puede ayudar a debug / resolver conflictos en server
+                const payload: any = { ...this.timerObject, clientId: this.clientId };
+                this.firebaseStorageService.updateTimer(payload);
+            } catch (e) {
+                console.warn('updateContador firebase write failed', e);
+            }
+            this.suppressRealtimeUntil = now + 1500; // evitar sobrescrituras inmediatas
+            this.lastSyncTs = now;
         }
 
-        this.suppressRealtimeUntil = now + 1500; // evitar sobrescrituras inmediatas
-        this.lastSyncTs = now;
         this.timerSubject.next({ ...this.timerObject });
     }
 
@@ -164,20 +179,20 @@ export class TimerService {
         this.initialTimer = { min: timer.min, sec: timer.sec, updatedAt: Date.now(), running: false };
         this.cookieService.set('initialMinutes', String(timer.min));
         this.cookieService.set('initialSeconds', String(timer.sec));
-        // aplicar inmediatamente como estado actual
-        this.updateContador({ ...this.initialTimer });
+        // aplicar inmediatamente como estado actual y escribir solo si este cliente es controlador
+        this.updateContador({ ...this.initialTimer }, { write: true });
     }
 
     changeTimer(): void {
         this.timerStatus = !this.timerStatus;
         if (this.timerStatus) {
             this.startTickerLoop();
-            // informar a firebase de que está arrancado (sin esperar throttle)
-            this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: true });
+            // informar a firebase de que está arrancado (solo si controlador)
+            this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: true }, { write: true });
         } else {
-            // parar y sincronizar estado
+            // parar y sincronizar estado (solo si controlador)
             this.clearTickerLoop();
-            this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: false });
+            this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: false }, { write: true });
         }
     }
 
@@ -206,8 +221,8 @@ export class TimerService {
                     // llegó a 0:0
                     this.timerStatus = false;
                     this.clearTickerLoop();
-                    // sincronizar parada
-                    this.updateContador({ min: 0, sec: 0, running: false });
+                    // sincronizar parada (solo controlador debería escribir)
+                    this.updateContador({ min: 0, sec: 0, running: false }, { write: true });
                     return;
                 }
             }
@@ -215,10 +230,10 @@ export class TimerService {
             // publicar tick local inmediatamente (UI)
             this.timerSubject.next({ min: this.timerObject.min, sec: this.timerObject.sec, updatedAt: this.localLastUpdatedAt, running: true });
 
-            // throttle escritura a firebase
+            // throttle escritura a firebase: sólo si writeEnabled
             const now = Date.now();
-            if (now - this.lastSyncTs >= this.syncIntervalMs) {
-                this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: true });
+            if ((now - this.lastSyncTs >= this.syncIntervalMs) && this.writeEnabled) {
+                this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: true }, { write: true });
             }
         }, 1000);
     }
@@ -231,9 +246,14 @@ export class TimerService {
         this.timerStatus = false;
     }
 
-    resetTimer(): void {
-        // prioridad: initialTimer > cookies initialMinutes/initialSeconds > cookies minutes/seconds > default
-        if (this.initialTimer) {
+    /**
+     * resetTimer ahora acepta opcionalmente un Timer para preestablecer sin entrar en Admin UI.
+     * Si se pasa timerParam se aplica y (si controller) se escribe; si no, usa initial/cookies/default.
+     */
+    resetTimer(timerParam?: Timer): void {
+        if (timerParam) {
+            this.timerObject = { min: timerParam.min, sec: timerParam.sec, updatedAt: Date.now(), running: false };
+        } else if (this.initialTimer) {
             this.timerObject = { min: this.initialTimer.min, sec: this.initialTimer.sec, updatedAt: Date.now(), running: false };
         } else {
             const initMinRaw = this.cookieService.get('initialMinutes');
@@ -254,15 +274,15 @@ export class TimerService {
             }
         }
 
-        // publicar y sincronizar de inmediato
+        // publicar y sincronizar de inmediato (solo si controller)
         this.timerSubject.next({ ...this.timerObject });
-        this.updateContador({ ...this.timerObject });
+        this.updateContador({ ...this.timerObject }, { write: true });
     }
 
     stopTimer(): void {
         this.clearTickerLoop();
-        // sincronizar al parar
-        this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: false });
+        // sincronizar al parar (solo controller)
+        this.updateContador({ min: this.timerObject.min, sec: this.timerObject.sec, running: false }, { write: true });
     }
 
     saveTimer(name: string): void {
