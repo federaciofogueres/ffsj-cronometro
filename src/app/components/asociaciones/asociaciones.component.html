@@ -1,5 +1,14 @@
 @if(view === 'list') {
 <div class="container p-5">
+
+    <!-- filtro -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <input class="form-control" type="text" placeholder="Filtrar asociaciones..." [(ngModel)]="filterText"
+                (ngModelChange)="onFilterChange()" />
+        </div>
+    </div>
+
     <div class="listado">
         <table class="w-100">
             <tbody>
@@ -7,7 +16,7 @@
                     <th>Asociación</th>
                     <th>Ver</th>
                 </tr>
-                @for(association of associations; track $index) {
+                @for(association of pagedAssociations; track $index) {
                 <tr>
                     <td>{{ association.title }}</td>
                     <td>
@@ -18,6 +27,21 @@
                 }
             </tbody>
         </table>
+    </div>
+
+    <!-- paginación -->
+    <div class="row mt-3 align-items-center">
+        <div class="col-auto">
+            <button class="btn btn-sm btn-outline-primary" [disabled]="currentPage === 1"
+                (click)="prevPage()">Anterior</button>
+        </div>
+        <div class="col text-center">
+            <span class="badge bg-secondary">Página {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-sm btn-outline-primary" [disabled]="currentPage === totalPages"
+                (click)="nextPage()">Siguiente</button>
+        </div>
     </div>
 
     <div class="row mt-5">
