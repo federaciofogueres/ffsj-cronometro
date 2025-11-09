@@ -66,11 +66,25 @@ export class TimerService {
             running: false
         };
 
-        // cargar initial si existe
-        const initMin = parseInt(this.cookieService.get('initialMinutes') || '', 10);
-        const initSec = parseInt(this.cookieService.get('initialSeconds') || '', 10);
-        if (!isNaN(initMin) && !isNaN(initSec)) {
-            this.initialTimer = { min: initMin, sec: initSec, updatedAt: Date.now(), running: false };
+        // cargar initial si existe en localStorage (preferible) o cookies
+        try {
+            const stored = localStorage.getItem('initialTimer');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed && typeof parsed.min === 'number' && typeof parsed.sec === 'number') {
+                    this.initialTimer = { min: parsed.min, sec: parsed.sec, updatedAt: parsed.updatedAt || Date.now(), running: false };
+                }
+            }
+        } catch (e) {
+            // ignore parse errors
+        }
+
+        if (!this.initialTimer) {
+            const initMin = parseInt(this.cookieService.get('initialMinutes') || '', 10);
+            const initSec = parseInt(this.cookieService.get('initialSeconds') || '', 10);
+            if (!isNaN(initMin) && !isNaN(initSec)) {
+                this.initialTimer = { min: initMin, sec: initSec, updatedAt: Date.now(), running: false };
+            }
         }
 
         this.timerSubject.next({ ...this.timerObject });
@@ -177,10 +191,20 @@ export class TimerService {
 
     setInitialTimer(timer: Timer): void {
         this.initialTimer = { min: timer.min, sec: timer.sec, updatedAt: Date.now(), running: false };
+
+        // persistir en cookies para compatibilidad
         this.cookieService.set('initialMinutes', String(timer.min));
         this.cookieService.set('initialSeconds', String(timer.sec));
-        // aplicar inmediatamente como estado actual y escribir solo si este cliente es controlador
-        this.updateContador({ ...this.initialTimer }, { write: true });
+
+        // persistir también en localStorage (JSON) para que clients que no pasen por Admin lo lean
+        try {
+            localStorage.setItem('initialTimer', JSON.stringify({ min: timer.min, sec: timer.sec, updatedAt: Date.now() }));
+        } catch (e) {
+            // si localStorage falla, no bloqueamos
+        }
+
+        // aplicar inmediatamente como estado actual y escribir si corresponde
+        this.updateContador({ min: timer.min, sec: timer.sec, running: false }, { write: true });
     }
 
     changeTimer(): void {
@@ -253,24 +277,46 @@ export class TimerService {
     resetTimer(timerParam?: Timer): void {
         if (timerParam) {
             this.timerObject = { min: timerParam.min, sec: timerParam.sec, updatedAt: Date.now(), running: false };
-        } else if (this.initialTimer) {
-            this.timerObject = { min: this.initialTimer.min, sec: this.initialTimer.sec, updatedAt: Date.now(), running: false };
         } else {
-            const initMinRaw = this.cookieService.get('initialMinutes');
-            const initSecRaw = this.cookieService.get('initialSeconds');
-            const initMin = parseInt(initMinRaw || '', 10);
-            const initSec = parseInt(initSecRaw || '', 10);
-            if (!isNaN(initMin) && !isNaN(initSec)) {
-                this.timerObject = { min: initMin, sec: initSec, updatedAt: Date.now(), running: false };
+            // 1) memoria (setInitialTimer)
+            if (this.initialTimer) {
+                this.timerObject = { min: this.initialTimer.min, sec: this.initialTimer.sec, updatedAt: Date.now(), running: false };
             } else {
-                const cookieMin = parseInt(this.cookieService.get('minutes') || '', 10);
-                const cookieSec = parseInt(this.cookieService.get('seconds') || '', 10);
-                this.timerObject = {
-                    min: !isNaN(cookieMin) ? cookieMin : 3,
-                    sec: !isNaN(cookieSec) ? cookieSec : 30,
-                    updatedAt: Date.now(),
-                    running: false
-                };
+                // 2) localStorage
+                let got = false;
+                try {
+                    const stored = localStorage.getItem('initialTimer');
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && typeof parsed.min === 'number' && typeof parsed.sec === 'number') {
+                            this.timerObject = { min: parsed.min, sec: parsed.sec, updatedAt: Date.now(), running: false };
+                            got = true;
+                        }
+                    }
+                } catch (e) {
+                    // ignore parse errors
+                }
+
+                if (!got) {
+                    // 3) cookies initialMinutes/initialSeconds
+                    const initMinRaw = this.cookieService.get('initialMinutes');
+                    const initSecRaw = this.cookieService.get('initialSeconds');
+                    const initMin = parseInt(initMinRaw || '', 10);
+                    const initSec = parseInt(initSecRaw || '', 10);
+                    if (!isNaN(initMin) && !isNaN(initSec)) {
+                        this.timerObject = { min: initMin, sec: initSec, updatedAt: Date.now(), running: false };
+                    } else {
+                        // 4) fallback cookies minutes/seconds or defaults
+                        const cookieMin = parseInt(this.cookieService.get('minutes') || '', 10);
+                        const cookieSec = parseInt(this.cookieService.get('seconds') || '', 10);
+                        this.timerObject = {
+                            min: !isNaN(cookieMin) ? cookieMin : 3,
+                            sec: !isNaN(cookieSec) ? cookieSec : 30,
+                            updatedAt: Date.now(),
+                            running: false
+                        };
+                    }
+                }
             }
         }
 
