@@ -39,17 +39,39 @@ export class ChoreService {
   addAsociacionesSelected(asociacion: Asociacion) {
     const index = this.asociacionesArray.findIndex(arr => arr.id === asociacion.id);
     if (index === -1) {
-      this.asociacionesArray.push(asociacion);
+      const nextOrder = this.asociacionesArray.length + 1;
+      this.asociacionesArray.push({ ...asociacion, order: asociacion.order ?? nextOrder });
     } else {
       this.asociacionesArray.splice(index, 1);
     }
+    this.normalizeOrder();
     console.log(this.asociacionesArray)
     this.asociacionesSelecteds$.next(this.asociacionesArray);
   }
 
   setAsociacionesSelected(asociaciones: Asociacion[]) {
-    this.asociacionesArray = asociaciones;
-    this.asociacionesSelecteds$.next(asociaciones);
+    this.asociacionesArray = [...(asociaciones || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    // normaliza orden secuencial
+    this.normalizeOrder();
+    this.asociacionesSelecteds$.next(this.asociacionesArray);
+  }
+
+  reorderAsociaciones(orderIds: string[]) {
+    const ordered: Asociacion[] = [];
+    orderIds.forEach((id, idx) => {
+      const found = this.asociacionesArray.find(a => a.id === id);
+      if (found) {
+        ordered.push({ ...found, order: idx + 1 });
+      }
+    });
+    this.asociacionesArray = ordered;
+    this.normalizeOrder();
+    this.asociacionesSelecteds$.next(this.asociacionesArray);
+  }
+
+  private normalizeOrder() {
+    this.asociacionesArray = this.asociacionesArray
+      .map((a, idx) => ({ ...a, order: idx + 1 }));
   }
 
 }

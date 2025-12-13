@@ -7,10 +7,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Asociacion, InlineResponse200, SesionesService, Session, SessionResponse, TypeSesionService, TypeSession, TypeSessionResponse } from '../../../api';
 import { ChoreService } from '../../services/chore.service';
 import { Action } from '../asociacion/asociacion.component';
 import { ParticipantesComponent } from '../participantes/participantes.component';
+import { AsociacionOrderDialogComponent, AsociacionOrderResult } from '../asociacion-order-dialog/asociacion-order-dialog.component';
 
 @Component({
   selector: 'app-sesion',
@@ -26,6 +28,7 @@ import { ParticipantesComponent } from '../participantes/participantes.component
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatDialogModule,
     ParticipantesComponent
   ],
   templateUrl: './sesion.component.html',
@@ -61,7 +64,8 @@ export class SesionComponent {
     private fb: FormBuilder,
     private choreService: ChoreService,
     private sessionService: SesionesService,
-    private typeSesionService: TypeSesionService
+    private typeSesionService: TypeSesionService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit() {
@@ -140,12 +144,13 @@ export class SesionComponent {
 
   processAction() {
     if (this.newSessionForm.valid) {
+      const participantsOrdered = (this.asociacionesRelatedToSesion || []).map((a, idx) => ({ ...a, order: a.order ?? idx + 1 }));
       let session: Session = {
         id: this.newSessionForm.controls['id'].value,
         session_title: this.newSessionForm.controls['session_title'].value,
         type: parseInt(this.newSessionForm.controls['type'].value.id),
         type_normalized: this.newSessionForm.controls['type'].value.type_normalized,
-        participants: this.asociacionesRelatedToSesion,
+        participants: participantsOrdered,
         active: this.newSessionForm.controls['active'].value,
         timerMode: this.newSessionForm.controls['timerMode'].value,
         sendActive: this.newSessionForm.controls['sendActive'].value
@@ -199,6 +204,27 @@ export class SesionComponent {
 
   manageParticipants() {
     this.manageVarticipantesShow = !this.manageVarticipantesShow;
+  }
+
+  finishParticipants() {
+    const participantes = [...(this.asociacionesRelatedToSesion || [])];
+    if (participantes.length === 0) {
+      this.manageVarticipantesShow = false;
+      return;
+    }
+    const dialogRef = this.dialog.open<AsociacionOrderDialogComponent, any, AsociacionOrderResult>(AsociacionOrderDialogComponent, {
+      data: { asociaciones: participantes },
+      width: '500px'
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.action === 'save' && Array.isArray(result.asociaciones)) {
+        this.choreService.reorderAsociaciones(result.asociaciones.map(a => a.id!));
+        this.asociacionesRelatedToSesion = result.asociaciones;
+        this.manageVarticipantesShow = false;
+      } else if (result?.action === 'cancel') {
+        this.manageVarticipantesShow = true;
+      }
+    });
   }
 
   back() {

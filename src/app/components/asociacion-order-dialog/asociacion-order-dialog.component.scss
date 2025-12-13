@@ -1,0 +1,21 @@
+.order-list {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.order-item {
+  padding: 0.5rem;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  background: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.drag-handle {
+  cursor: move;
+  color: #6c757d;
+  font-weight: bold;
+}
