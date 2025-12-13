@@ -10,8 +10,9 @@
  * Do not edit the class manually.
  */
 
-export interface Asociacion { 
+export interface Asociacion {
     id?: string;
     email?: string;
     title?: string;
+    active?: boolean;
 }

@@ -70,6 +70,10 @@ export class SignerComponent {
     this.context.clearRect(0, 0, this.width, this.height);
   }
 
+  toDataURL(): string {
+    return (this.myCanvas.nativeElement as HTMLCanvasElement).toDataURL('image/png');
+  }
+
   private distanceBetween(x1: number, y1: number, x2: number, y2: number): number {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   }

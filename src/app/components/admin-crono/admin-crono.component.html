@@ -2,8 +2,8 @@
 <div class="container-timer">
 
     <div class="d-flex flex-column">
-        <app-selector [type]="'session'"></app-selector>
-        <app-selector [type]="'asociacion'"></app-selector>
+        <app-selector [type]="'session'" [sessionStatus]="'active'"></app-selector>
+        <app-selector [type]="'asociacion'" [asociacionStatus]="'active'"></app-selector>
     </div>
 
     <div class="h-100-timer d-flex flex-column justify-content-around">
@@ -22,10 +22,10 @@
             <div class="row">
                 <div class="col d-flex justify-content-center timer-button">
                     @if(!timerService.timerStatus) {
-                    <button (click)="timerService.changeTimer()"
+                    <button [disabled]="!ready" (click)="timerService.changeTimer()"
                         class="btn btn-success activate-button">Activar</button>
                     } @else {
-                    <button (click)="timerService.changeTimer()" class="btn btn-danger stop-button">Parar</button>
+                    <button [disabled]="!ready" (click)="timerService.changeTimer()" class="btn btn-danger stop-button">Parar</button>
                     }
                 </div>
             </div>
@@ -34,12 +34,12 @@
         <div class="h-100 d-flex flex-column justify-content-around">
 
             <div class="d-flex flex-column mx-auto w-75">
-                <button (click)="resetTimer()" class="btn btn-foc-rojo stop-button">Reset</button>
+                <button [disabled]="!ready" (click)="resetTimer()" class="btn btn-foc-rojo stop-button">Reset</button>
             </div>
             <div class="d-flex flex-column mx-auto gap-3 w-75">
-                <button (click)="changeTimer()" class="btn btn-foc-naranja send-button">
+                <button [disabled]="!ready" (click)="changeTimer()" class="btn btn-foc-naranja send-button">
                     {{timerTitle === 'entrada' ? 'Crono Salida' : 'Crono Entrada'}}</button>
-                <button (click)="goToConfirmation()" class="btn btn-foc-naranja w-100">Validar registro</button>
+                <button [disabled]="!ready" (click)="goToConfirmation()" class="btn btn-foc-naranja w-100">Validar registro</button>
             </div>
         </div>
     </div>

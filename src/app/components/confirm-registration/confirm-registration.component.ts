@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FfsjAlertService } from 'ffsj-web-components';
 import { Asociacion, EmailItem, InlineResponse200, Session, SettingsService } from '../../../api';
 import { ChoreService } from '../../services/chore.service';
 import { TimerService, TimerStatus } from '../../services/timer.service';
+import { TimerMarksService } from '../../services/timer-marks.service';
 import { SignerComponent } from '../signer/signer.component';
 
 @Component({
@@ -20,8 +21,11 @@ import { SignerComponent } from '../signer/signer.component';
 })
 export class ConfirmRegistrationComponent {
 
+  @ViewChild(SignerComponent) signer?: SignerComponent;
+
   emailStatus = '';
   alertMessage = '';
+  sending = false;
 
   calculatedSize = {
     width: 0,
@@ -50,12 +54,14 @@ export class ConfirmRegistrationComponent {
     this.choreService.sessionSelectedObservable.subscribe((res: Session | null) => {
       if (res !== null) {
         this.session = res;
+        this.loadMarks();
       }
     })
     this.choreService.asociacionSelectedObservable.subscribe((res: Asociacion | null) => {
       if (res !== null) {
         this.asociacion = res;
         this.registryForm.controls['email'].setValue(this.asociacion.email);
+        this.loadMarks();
       }
     })
   }
@@ -66,17 +72,12 @@ export class ConfirmRegistrationComponent {
     private fb: FormBuilder,
     private choreService: ChoreService,
     private alertService: FfsjAlertService,
-    private router: Router
+    private router: Router,
+    private timerMarksService: TimerMarksService
   ) {
     this.calculatedSize.width = window.innerWidth - 32;
     this.calculatedSize.height = window.innerHeight * 0.3;
-    for (let timer of this.timerService.timers) {
-      if (timer.name === 'entryTime') {
-        this.entryTimer = timer;
-      } else if (timer.name === 'exitTime') {
-        this.exitTimer = timer;
-      }
-    }
+    this.loadMarks();
     this.loadForm();
   }
 
@@ -118,15 +119,19 @@ export class ConfirmRegistrationComponent {
       }
       this.settingsService.sendEmail(body).subscribe((res: InlineResponse200) => {
         if (res.status?.code === '200') {
-          this.emailStatus = 'sentOK';
-          this.alertMessage = '¡Email enviado!';
-          this.alertService.success(this.alertMessage);
-          this.router.navigateByUrl('admin-crono');
-        } else {
+        this.emailStatus = 'sentOK';
+        this.alertMessage = '¡Email enviado!';
+        this.alertService.success(this.alertMessage);
+        this.router.navigateByUrl('admin-crono');
+      } else {
           this.emailStatus = 'sentKO';
           this.alertMessage = 'No se pudo enviar el email.';
           this.alertService.danger(this.alertMessage);
         }
+      }, () => {
+        this.emailStatus = 'sentKO';
+        this.alertMessage = 'No se pudo enviar el email.';
+        this.alertService.danger(this.alertMessage);
       })
     } else {
       this.emailStatus = 'sentKO';
@@ -136,8 +141,24 @@ export class ConfirmRegistrationComponent {
   }
 
   saveCanvas() {
-    var canvas = document.getElementsByTagName('app-signer').item(0)?.children[0] as HTMLCanvasElement
-    var dataCanvas = canvas.toDataURL("image/png");
+    const dataCanvas = this.signer?.toDataURL() || '';
     this.registryForm.controls['sign'].setValue("<img src='" + dataCanvas + "' alt='from canvas'/>");
+  }
+
+  private loadMarks(): void {
+    const entry = this.timerMarksService.getMark('entry', this.session?.id?.toString(), this.asociacion?.id?.toString());
+    const exit = this.timerMarksService.getMark('exit', this.session?.id?.toString(), this.asociacion?.id?.toString());
+    if (entry) {
+      this.entryTimer.value = entry.value;
+      if (this.registryForm) {
+        this.registryForm.controls['entryTimer'].setValue(entry.value);
+      }
+    }
+    if (exit) {
+      this.exitTimer.value = exit.value;
+      if (this.registryForm) {
+        this.registryForm.controls['exitTimer'].setValue(exit.value);
+      }
+    }
   }
 }

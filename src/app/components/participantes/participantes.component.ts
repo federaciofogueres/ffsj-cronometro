@@ -9,6 +9,7 @@ export interface AsociacionCheck {
   id: string;
   title: string;
   checked: boolean;
+  active?: boolean;
 }
 @Component({
   selector: 'app-participantes',
@@ -35,6 +36,7 @@ export class ParticipantesComponent {
   filterText: string = '';
   pageSize: number = 10;
   currentPage: number = 1;
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
   constructor(
     private asociacionesService: AsociacionesService,
@@ -70,7 +72,8 @@ export class ParticipantesComponent {
           return a.title.localeCompare(b.title);
         });
         asociaciones.participants?.map(asociacion => {
-          this.asociacionesShow.push({ id: asociacion.id!, title: asociacion.title!, checked: false });
+          const isActive = this.isAsociacionActive(asociacion);
+          this.asociacionesShow.push({ id: asociacion.id!, title: asociacion.title!, checked: false, active: isActive });
         })
         // se suscribe y marcará checked; la ordenación final se realiza en loadAsociacionesFromSession()
         this.loadAsociacionesFromSession();
@@ -101,8 +104,13 @@ export class ParticipantesComponent {
   // filtro computado sobre asociacionesShow
   get filteredAsociacionesShow(): AsociacionCheck[] {
     const q = (this.filterText || '').trim().toLowerCase();
-    if (!q) return this.asociacionesShow;
-    return this.asociacionesShow.filter(a => (a.title || '').toLowerCase().includes(q));
+    const matchesSearch = (a: AsociacionCheck) => !q || (a.title || '').toLowerCase().includes(q);
+    const matchesStatus = (a: AsociacionCheck) => {
+      if (this.statusFilter === 'all') return true;
+      const isActive = this.isActiveFlag(a.active);
+      return this.statusFilter === 'active' ? isActive : !isActive;
+    };
+    return this.asociacionesShow.filter(a => matchesSearch(a) && matchesStatus(a));
   }
 
   // paginación computada
@@ -119,6 +127,10 @@ export class ParticipantesComponent {
     this.currentPage = 1;
   }
 
+  onStatusFilterChange(): void {
+    this.currentPage = 1;
+  }
+
   prevPage(): void {
     if (this.currentPage > 1) this.currentPage--;
   }
@@ -129,6 +141,17 @@ export class ParticipantesComponent {
 
   private resetPagination(): void {
     this.currentPage = 1;
+  }
+
+  private isAsociacionActive(asociacion: Asociacion): boolean {
+    const value = (asociacion as any)?.active;
+    if (value === undefined || value === null) return true;
+    return value === true || value === 1 || value === '1';
+  }
+
+  private isActiveFlag(active?: boolean | number | string): boolean {
+    if (active === undefined || active === null) return true;
+    return active === true || active === 1 || active === '1';
   }
 
 }

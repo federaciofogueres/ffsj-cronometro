@@ -48,6 +48,8 @@ export class SesionComponent {
 
   tiposSesiones: TypeSession[] = [];
 
+  active = true;
+
   constructor(
     private fb: FormBuilder,
     private choreService: ChoreService,
@@ -71,11 +73,13 @@ export class SesionComponent {
         id: '',
         session_title: '',
         type: 0,
+        active: true
       }
       this.action = 'Crear'
     } else {
       this.loadAsociacionesFromSesion();
       this.action = 'Editar';
+      this.active = this.session.active ?? true;
     }
     this.loadForm();
   }
@@ -95,7 +99,8 @@ export class SesionComponent {
       session_title: new FormControl(this.session.session_title, [Validators.required]),
       type: new FormControl(tipoSession, Validators.required),
       session_date: new FormControl('', Validators.required),
-      session_time: new FormControl('', Validators.required)
+      session_time: new FormControl('', Validators.required),
+      active: new FormControl(this.active, [])
     });
     if (this.action === 'Editar') {
       let titleSplitted = this.session.session_title!.split(' - ');
@@ -127,7 +132,8 @@ export class SesionComponent {
         session_title: this.newSessionForm.controls['session_title'].value,
         type: parseInt(this.newSessionForm.controls['type'].value.id),
         type_normalized: this.newSessionForm.controls['type'].value.type_normalized,
-        participants: this.asociacionesRelatedToSesion
+        participants: this.asociacionesRelatedToSesion,
+        active: this.newSessionForm.controls['active'].value
       }
       console.log(session);
       if (this.action === 'Crear') {

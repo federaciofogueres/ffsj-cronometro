@@ -1,10 +1,17 @@
 <div class="container p-3" *ngIf="!loading">
     <div class="row mb-3">
-        <div class="col-8">
+        <div class="col-6">
             <input class="form-control" type="text" placeholder="Filtrar asociaciones..." [(ngModel)]="filterText"
                 (ngModelChange)="onFilterChange()" />
         </div>
-        <div class="col-4 text-end">
+        <div class="col-3">
+            <select class="form-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()">
+                <option value="all">Todas</option>
+                <option value="active">Sólo activas</option>
+                <option value="inactive">Sólo inactivas</option>
+            </select>
+        </div>
+        <div class="col-3 text-end">
             <span class="badge bg-secondary">Página {{ currentPage }} / {{ totalPages }}</span>
         </div>
     </div>

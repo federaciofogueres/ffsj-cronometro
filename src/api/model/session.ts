@@ -17,4 +17,5 @@ export interface Session {
     type?: number;
     type_normalized?: string;
     participants?: Array<Asociacion>;
+    active?: boolean;
 }

@@ -10,11 +10,11 @@
         </button>
         <ul class="dropdown-menu session-list" aria-labelledby="dropdownMenuButton">
             <li>
-                @for(session of sessions; track $index) {
+                @for(session of sessionsFiltered; track $index) {
                 <a class="dropdown-item session-item" (click)="onSelect(session)">{{session.session_title}}</a>
                 }
             </li>
-            <li><a class="dropdown-item session-item" *ngFor="let asociacion of asociaciones"
+            <li><a class="dropdown-item session-item" *ngFor="let asociacion of asociacionesFiltered"
                     (click)="onSelect(asociacion)">{{asociacion.title}}</a></li>
         </ul>
     </div>
