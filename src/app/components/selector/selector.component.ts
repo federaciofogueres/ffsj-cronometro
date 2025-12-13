@@ -65,7 +65,8 @@ export class SelectorComponent implements OnChanges {
       if (res !== null) {
         this.choreService.setAsociacionSelected(this.selectedAsociacion);
         this.sessionsService.getSession(res.id!).subscribe(sessionData => {
-          this.asociaciones = (sessionData.session?.participants || []).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+          // this.asociaciones = (sessionData.session?.participants || []).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+          this.asociaciones = sessionData.session?.participants || [];
           this.applyAsociacionFilter();
           this.syncSelectedAsociacion();
           this.loading = false;
