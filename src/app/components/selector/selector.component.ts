@@ -65,7 +65,7 @@ export class SelectorComponent implements OnChanges {
       if (res !== null) {
         this.choreService.setAsociacionSelected(this.selectedAsociacion);
         this.sessionsService.getSession(res.id!).subscribe(sessionData => {
-          this.asociaciones = sessionData.session?.participants || [];
+          this.asociaciones = (sessionData.session?.participants || []).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
           this.applyAsociacionFilter();
           this.syncSelectedAsociacion();
           this.loading = false;
@@ -75,7 +75,7 @@ export class SelectorComponent implements OnChanges {
     })
     this.asociacionsService.getAllAsociaciones().subscribe((res: AsociacionesResponse) => {
       if (res.status?.code === '200') {
-        this.asociaciones = res.participants || [];
+        this.asociaciones = (res.participants || []).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
         this.applyAsociacionFilter();
         this.syncSelectedAsociacion();
         this.asociacionesReady = true;

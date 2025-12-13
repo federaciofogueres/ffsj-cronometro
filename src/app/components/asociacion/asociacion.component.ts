@@ -68,7 +68,7 @@ export class AsociacionComponent {
     return new Promise((resolve, reject) => {
       this.censoService.asociacionesGet().subscribe({
         next: (res: ResponseAsociaciones) => {
-          this.asociaciones = res.asociaciones!.filter(asociacion => asociacion['tipo_asociacion'] === 2);
+          this.asociaciones = res.asociaciones!;
           resolve(true);
         }
       })
@@ -91,7 +91,7 @@ export class AsociacionComponent {
   asociacionSelected(event: any) {
     this.newAssociationForm.controls['id'].setValue(event.value.id);
     this.newAssociationForm.controls['title'].setValue(event.value.nombre);
-    if(this.action === 'Editar') {
+    if (this.action === 'Editar') {
       this.associationService.getAsociacion(event.value.id).subscribe((res: any) => {
         if (res.status?.code === '200') {
           this.newAssociationForm.controls['email'].setValue(res['session']?.email);

@@ -18,4 +18,6 @@ export interface Session {
     type_normalized?: string;
     participants?: Array<Asociacion>;
     active?: boolean;
+    timerMode?: 'none' | 'simple' | 'entry_exit';
+    sendActive?: boolean;
 }

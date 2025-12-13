@@ -28,6 +28,16 @@
                 }
             </mat-select>
         </mat-form-field>
+        <mat-form-field class="w-100">
+            <mat-label>Tipo de crono</mat-label>
+            <mat-select formControlName="timerMode">
+                <mat-option *ngFor="let mode of timerModes" [value]="mode.value">{{ mode.label }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="sessionSendActive" formControlName="sendActive">
+            <label class="form-check-label" for="sessionSendActive">Enviar resultados habilitado</label>
+        </div>
         <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="sessionActive" formControlName="active">
             <label class="form-check-label" for="sessionActive">Sesión activa</label>

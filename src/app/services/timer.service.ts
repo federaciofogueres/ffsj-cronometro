@@ -227,6 +227,17 @@ export class TimerService implements OnDestroy {
         }
     }
 
+    // devuelve el timer actual
+    getCurrentTimer(): Timer {
+        return this.timerSubject.getValue();
+    }
+
+    formatTimer(timer: Timer = this.timerSubject.getValue()): string {
+        const min = timer.min ?? 0;
+        const sec = timer.sec ?? 0;
+        return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    }
+
     private bootstrapInitialTimer(): void {
         let min = 3;
         let sec = 30;

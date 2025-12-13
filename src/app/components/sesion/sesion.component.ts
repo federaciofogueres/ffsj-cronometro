@@ -47,8 +47,15 @@ export class SesionComponent {
   asociacionesRelatedToSesion: Asociacion[] = [];
 
   tiposSesiones: TypeSession[] = [];
+  timerModes = [
+    { value: 'none', label: 'Sin crono' },
+    { value: 'simple', label: 'Crono simple' },
+    { value: 'entry_exit', label: 'Crono entrada y salida' }
+  ];
 
   active = true;
+  timerMode: 'none' | 'simple' | 'entry_exit' = 'entry_exit';
+  sendActive: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -73,13 +80,17 @@ export class SesionComponent {
         id: '',
         session_title: '',
         type: 0,
-        active: true
+        active: true,
+        timerMode: 'entry_exit',
+        sendActive: true
       }
       this.action = 'Crear'
     } else {
       this.loadAsociacionesFromSesion();
       this.action = 'Editar';
       this.active = this.session.active ?? true;
+      this.timerMode = (this.session.timerMode as any) || 'entry_exit';
+      this.sendActive = this.session.sendActive ?? true;
     }
     this.loadForm();
   }
@@ -100,7 +111,9 @@ export class SesionComponent {
       type: new FormControl(tipoSession, Validators.required),
       session_date: new FormControl('', Validators.required),
       session_time: new FormControl('', Validators.required),
-      active: new FormControl(this.active, [])
+      active: new FormControl(this.active, []),
+      timerMode: new FormControl(this.timerMode, []),
+      sendActive: new FormControl(this.sendActive, [])
     });
     if (this.action === 'Editar') {
       let titleSplitted = this.session.session_title!.split(' - ');
@@ -133,7 +146,9 @@ export class SesionComponent {
         type: parseInt(this.newSessionForm.controls['type'].value.id),
         type_normalized: this.newSessionForm.controls['type'].value.type_normalized,
         participants: this.asociacionesRelatedToSesion,
-        active: this.newSessionForm.controls['active'].value
+        active: this.newSessionForm.controls['active'].value,
+        timerMode: this.newSessionForm.controls['timerMode'].value,
+        sendActive: this.newSessionForm.controls['sendActive'].value
       }
       console.log(session);
       if (this.action === 'Crear') {

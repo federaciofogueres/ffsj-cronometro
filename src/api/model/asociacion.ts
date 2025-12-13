@@ -15,4 +15,5 @@ export interface Asociacion {
     email?: string;
     title?: string;
     active?: boolean;
+    registeredTimers?: Array<string>;
 }
